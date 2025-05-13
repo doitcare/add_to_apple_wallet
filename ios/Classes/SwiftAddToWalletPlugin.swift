@@ -39,6 +39,7 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
     private var _signature: String?
     private var _width: CGFloat
     private var _height: CGFloat
+    private var _borderRadius: CGFloat
     private var _key: String
     private var _channel: FlutterMethodChannel
 
