@@ -55,6 +55,7 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
         _signature = args["signature"] as? String
         _width = args["width"] as? CGFloat ?? 140
         _height = args["height"] as? CGFloat ?? 30
+        _borderRadius = args["borderRadius"] as? CGFloat ?? 8
         _key = args["key"] as! String
         _channel = channel
         super.init()
@@ -68,6 +69,8 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
     func createAddPassButton() {
         let passButton = PKAddPassButton(addPassButtonStyle: PKAddPassButtonStyle.black)
         passButton.frame = CGRect(x: 0, y: 0, width: _width, height: _height)
+        passButton.layer.cornerRadius = _borderRadius
+        passButton.clipsToBounds = true
         passButton.addTarget(self, action: #selector(passButtonAction), for: .touchUpInside)
         _view.addSubview(passButton)
     }

@@ -14,6 +14,7 @@ class AddToWalletButton extends StatefulWidget {
   final String? signature;
   final double width;
   final double height;
+  final double borderRadius;
   final Widget? unsupportedPlatformChild;
   final FutureOr<void> Function()? onPressed;
   final String _id = Uuid().v4();
@@ -25,6 +26,7 @@ class AddToWalletButton extends StatefulWidget {
       this.signature,
       required this.width,
       required this.height,
+      this.borderRadius = 8,
       this.onPressed,
       this.unsupportedPlatformChild})
       : super(key: key) {
@@ -39,6 +41,7 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
   get uiKitCreationParams => {
         'width': widget.width,
         'height': widget.height,
+        'borderRadius': widget.borderRadius,
         'pass': widget.pkPass,
         'issuerData': widget.issuerData,
         'signature': widget.signature,
