@@ -1,14 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:add_to_wallet/add_to_wallet.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 class AddToWalletButton extends StatefulWidget {
-  // Use a fixed view type instead of a dynamic one
-  static const String viewType = 'PKAddPassButton';
+  static const viewType = 'PKAddPassButton';
 
   final List<int>? pkPass;
   final String? issuerData;
@@ -18,23 +17,19 @@ class AddToWalletButton extends StatefulWidget {
   final double borderRadius;
   final Widget? unsupportedPlatformChild;
   final FutureOr<void> Function()? onPressed;
-  final String _id = Uuid().v4();
 
-  AddToWalletButton(
-      {Key? key,
-      this.pkPass,
-      this.issuerData,
-      this.signature,
-      required this.width,
-      required this.height,
-      this.borderRadius = 8,
-      this.onPressed,
-      this.unsupportedPlatformChild})
-      : super(key: key) {
+  AddToWalletButton({
+    Key? key,
+    this.pkPass,
+    this.issuerData,
+    this.signature,
+    required this.width,
+    required this.height,
+    this.borderRadius = 8,
+    this.onPressed,
+    this.unsupportedPlatformChild,
+  }) : super(key: key) {
     assert(pkPass != null || (issuerData != null && signature != null));
-    if (pkPass != null && pkPass!.isEmpty) {
-      debugPrint('Warning: Empty pkPass provided to AddToWalletButton');
-    }
   }
 
   @override
@@ -42,7 +37,20 @@ class AddToWalletButton extends StatefulWidget {
 }
 
 class _AddToWalletButtonState extends State<AddToWalletButton> {
-  bool _viewCreated = false;
+  late final String _id;
+
+  @override
+  void initState() {
+    super.initState();
+    _id = const Uuid().v4();
+    AddToWallet().addHandler(_id, (_) => widget.onPressed?.call());
+  }
+
+  @override
+  void dispose() {
+    AddToWallet().removeHandler(_id);
+    super.dispose();
+  }
 
   Map<String, dynamic> get uiKitCreationParams => {
         'width': widget.width,
@@ -51,21 +59,8 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
         'pass': widget.pkPass,
         'issuerData': widget.issuerData,
         'signature': widget.signature,
-        'key': widget._id, // Still use unique ID for the key parameter
+        'key': _id,
       };
-
-  @override
-  void initState() {
-    super.initState();
-    AddToWallet().addHandler(widget._id, (_) => widget.onPressed?.call());
-  }
-
-  @override
-  void dispose() {
-    AddToWallet().removeHandler(widget._id);
-    _viewCreated = false;
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,46 +72,15 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
   }
 
   Widget platformWidget(BuildContext context) {
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-        try {
-          if (!_viewCreated) {
-            _viewCreated = true;
-            return UiKitView(
-              viewType: AddToWalletButton.viewType, // Use the fixed view type
-              layoutDirection: Directionality.of(context),
-              creationParams: uiKitCreationParams,
-              creationParamsCodec: const StandardMessageCodec(),
-              onPlatformViewCreated: (_) {
-                // View created successfully
-              },
-            );
-          } else {
-            // If view was already created, show a placeholder
-            return Container(
-              color: Colors.transparent,
-              width: widget.width,
-              height: widget.height,
-            );
-          }
-        } catch (e) {
-          debugPrint('Error creating AddToWalletButton: $e');
-          return Container(
-            width: widget.width,
-            height: widget.height,
-            color: Colors.transparent,
-            child: Center(
-              child: Text(
-                'Wallet unavailable',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          );
-        }
-      default:
-        if (widget.unsupportedPlatformChild == null)
-          throw UnsupportedError('Unsupported platform view');
-        return widget.unsupportedPlatformChild!;
+    if (!Platform.isIOS) {
+      return widget.unsupportedPlatformChild ?? const SizedBox.shrink();
     }
+
+    return UiKitView(
+      viewType: AddToWalletButton.viewType,
+      layoutDirection: Directionality.of(context),
+      creationParams: uiKitCreationParams,
+      creationParamsCodec: const StandardMessageCodec(),
+    );
   }
 }
