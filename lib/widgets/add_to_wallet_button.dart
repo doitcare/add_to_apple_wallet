@@ -76,7 +76,16 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
       return widget.unsupportedPlatformChild ?? const SizedBox.shrink();
     }
 
+    // This key changes if any of its constituent values change,
+    // forcing the UiKitView to be recreated.
+    final platformViewKey = ValueKey(
+        // Construct a key from all parameters that define the native view.
+        // This includes parameters from uiKitCreationParams.
+        '${widget.width}-${widget.height}-${widget.borderRadius}-${widget.pkPass?.hashCode ?? 'null_pkPass'}-${widget.issuerData ?? 'null_issuerData'}-${widget.signature ?? 'null_signature'}-${_id}');
+
     return UiKitView(
+      key:
+          platformViewKey, // Added key to ensure recreation when parameters change
       viewType: AddToWalletButton.viewType,
       layoutDirection: Directionality.of(context),
       creationParams: uiKitCreationParams,
