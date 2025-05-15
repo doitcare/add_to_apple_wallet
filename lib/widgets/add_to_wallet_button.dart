@@ -7,7 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 class AddToWalletButton extends StatefulWidget {
-  static const String _baseViewType = 'PKAddPassButton';
+  // Use a fixed view type instead of a dynamic one
+  static const String viewType = 'PKAddPassButton';
 
   final List<int>? pkPass;
   final String? issuerData;
@@ -18,9 +19,6 @@ class AddToWalletButton extends StatefulWidget {
   final Widget? unsupportedPlatformChild;
   final FutureOr<void> Function()? onPressed;
   final String _id = Uuid().v4();
-
-  // Create a unique viewType for each instance
-  String get viewType => '${_baseViewType}_${_id}';
 
   AddToWalletButton(
       {Key? key,
@@ -53,7 +51,7 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
         'pass': widget.pkPass,
         'issuerData': widget.issuerData,
         'signature': widget.signature,
-        'key': widget._id,
+        'key': widget._id, // Still use unique ID for the key parameter
       };
 
   @override
@@ -85,7 +83,7 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
           if (!_viewCreated) {
             _viewCreated = true;
             return UiKitView(
-              viewType: widget.viewType, // Use the instance-specific view type
+              viewType: AddToWalletButton.viewType, // Use the fixed view type
               layoutDirection: Directionality.of(context),
               creationParams: uiKitCreationParams,
               creationParamsCodec: const StandardMessageCodec(),
@@ -107,6 +105,12 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
             width: widget.width,
             height: widget.height,
             color: Colors.transparent,
+            child: Center(
+              child: Text(
+                'Wallet unavailable',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
           );
         }
       default:
