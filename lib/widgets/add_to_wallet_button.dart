@@ -28,7 +28,7 @@ class AddToWalletButton extends StatefulWidget {
     this.borderRadius = 8,
     this.onPressed,
     this.unsupportedPlatformChild,
-  }) : super(key: key) {
+  }) : super(key: key ?? UniqueKey()) {
     assert(pkPass != null || (issuerData != null && signature != null));
   }
 
@@ -42,7 +42,7 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
   @override
   void initState() {
     super.initState();
-    _id = const Uuid().v4();
+    _id = Uuid().v4();
     AddToWallet().addHandler(_id, (_) => widget.onPressed?.call());
   }
 
@@ -64,7 +64,7 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: widget.width,
       height: widget.height,
       child: platformWidget(context),
