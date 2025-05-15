@@ -17,6 +17,8 @@ class AddToWalletButton extends StatefulWidget {
   final double borderRadius;
   final Widget? unsupportedPlatformChild;
   final FutureOr<void> Function()? onPressed;
+  final FutureOr<void> Function()?
+      onPassAdded; // New callback for successful pass addition
 
   AddToWalletButton({
     Key? key,
@@ -28,6 +30,7 @@ class AddToWalletButton extends StatefulWidget {
     this.borderRadius = 8,
     this.onPressed,
     this.unsupportedPlatformChild,
+    this.onPassAdded,
   }) : super(key: key ?? UniqueKey()) {
     assert(pkPass != null || (issuerData != null && signature != null));
   }
@@ -60,6 +63,8 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
         'issuerData': widget.issuerData,
         'signature': widget.signature,
         'key': _id,
+        'onPassAdded':
+            widget.onPassAdded != null, // Indicate if the callback is provided
       };
 
   @override
@@ -90,6 +95,16 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
       layoutDirection: Directionality.of(context),
       creationParams: uiKitCreationParams,
       creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: (int id) {
+        if (widget.onPassAdded != null) {
+          const MethodChannel('add_to_wallet')
+              .setMethodCallHandler((call) async {
+            if (call.method == 'onPassAdded') {
+              widget.onPassAdded?.call();
+            }
+          });
+        }
+      },
     );
   }
 }

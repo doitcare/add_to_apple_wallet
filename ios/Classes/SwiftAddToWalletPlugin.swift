@@ -32,7 +32,7 @@ class PKAddPassButtonNativeViewFactory: NSObject, FlutterPlatformViewFactory {
     }
 }
 
-class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
+class PKAddPassButtonNativeView: NSObject, FlutterPlatformView, PKAddPassesViewControllerDelegate {
     private var _view: UIView
     private var _pass: FlutterStandardTypedData?
     private var _issuerData: String?
@@ -89,26 +89,24 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
                 print("View controller messed up")
                 return
             }
+            controller.delegate = self // Set delegate to handle success
             guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else {
                 print("Root VC unavailable")
                 return
             }
             rootVC.present(controller, animated: true)
-            _invokeAddButtonPressed()
-        }
-        else if(_issuerData != nil && _signature != nil) {
+        } else if (_issuerData != nil && _signature != nil) {
             if #available(iOS 16.4, *) {
                 let issuerData: Data = _issuerData!.data(using: .utf8)!
                 let signature: Data = _signature!.data(using: .utf8)!
                 if let controllerWithIssuerData = ExceptionHandler.safeAddPassesViewController(withIssuerData: issuerData, signature: signature) {
+                    controllerWithIssuerData.delegate = self // Set delegate to handle success
                     guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else {
                         print("Root VC unavailable")
                         return
                     }
                     rootVC.present(controllerWithIssuerData, animated: true)
-                    _invokeAddButtonPressed()
-                }
-                else {
+                } else {
                     print("No valid issuer data and signature passed")
                     return
                 }
@@ -116,10 +114,31 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
                 print("icloud binding only available from iOS 16.4")
                 return
             }
-        }
-        else {
+        } else {
             print("Pass or issuerData and signature must not null")
             return
+        }
+    }
+
+    // PKAddPassesViewControllerDelegate method
+    func addPassesViewControllerDidFinish(_ controller: PKAddPassesViewController) {
+        controller.dismiss(animated: true) {
+            if let pass = self._pass {
+                let passLibrary = PKPassLibrary()
+                do {
+                    let newPass = try PKPass(data: pass.data)
+                    if passLibrary.containsPass(newPass) {
+                        // Notify Flutter only if the pass is successfully added
+                        self._channel.invokeMethod("onPassAdded", arguments: ["key": self._key])
+                    } else {
+                        print("Pass not added to the library")
+                    }
+                } catch {
+                    print("Failed to parse pass data for validation")
+                }
+            } else {
+                print("No pass data available for validation")
+            }
         }
     }
     
