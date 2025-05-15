@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 class AddToWalletButton extends StatefulWidget {
-  static const viewType = 'PKAddPassButton';
+  static const String _baseViewType = 'PKAddPassButton';
 
   final List<int>? pkPass;
   final String? issuerData;
@@ -18,6 +18,9 @@ class AddToWalletButton extends StatefulWidget {
   final Widget? unsupportedPlatformChild;
   final FutureOr<void> Function()? onPressed;
   final String _id = Uuid().v4();
+
+  // Create a unique viewType for each instance
+  String get viewType => '${_baseViewType}_${_id}';
 
   AddToWalletButton(
       {Key? key,
@@ -31,6 +34,9 @@ class AddToWalletButton extends StatefulWidget {
       this.unsupportedPlatformChild})
       : super(key: key) {
     assert(pkPass != null || (issuerData != null && signature != null));
+    if (pkPass != null && pkPass!.isEmpty) {
+      debugPrint('Warning: Empty pkPass provided to AddToWalletButton');
+    }
   }
 
   @override
@@ -38,7 +44,9 @@ class AddToWalletButton extends StatefulWidget {
 }
 
 class _AddToWalletButtonState extends State<AddToWalletButton> {
-  get uiKitCreationParams => {
+  bool _viewCreated = false;
+
+  Map<String, dynamic> get uiKitCreationParams => {
         'width': widget.width,
         'height': widget.height,
         'borderRadius': widget.borderRadius,
@@ -54,8 +62,10 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
     AddToWallet().addHandler(widget._id, (_) => widget.onPressed?.call());
   }
 
+  @override
   void dispose() {
     AddToWallet().removeHandler(widget._id);
+    _viewCreated = false;
     super.dispose();
   }
 
@@ -71,12 +81,34 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
   Widget platformWidget(BuildContext context) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
-        return UiKitView(
-          viewType: AddToWalletButton.viewType,
-          layoutDirection: Directionality.of(context),
-          creationParams: uiKitCreationParams,
-          creationParamsCodec: const StandardMessageCodec(),
-        );
+        try {
+          if (!_viewCreated) {
+            _viewCreated = true;
+            return UiKitView(
+              viewType: widget.viewType, // Use the instance-specific view type
+              layoutDirection: Directionality.of(context),
+              creationParams: uiKitCreationParams,
+              creationParamsCodec: const StandardMessageCodec(),
+              onPlatformViewCreated: (_) {
+                // View created successfully
+              },
+            );
+          } else {
+            // If view was already created, show a placeholder
+            return Container(
+              color: Colors.transparent,
+              width: widget.width,
+              height: widget.height,
+            );
+          }
+        } catch (e) {
+          debugPrint('Error creating AddToWalletButton: $e');
+          return Container(
+            width: widget.width,
+            height: widget.height,
+            color: Colors.transparent,
+          );
+        }
       default:
         if (widget.unsupportedPlatformChild == null)
           throw UnsupportedError('Unsupported platform view');
