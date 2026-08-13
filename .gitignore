@@ -6,3 +6,6 @@
 
 build/
 .fvm
+
+# Swift Package Manager build artifacts (from running `swift build` directly)
+ios/add_to_wallet/.build/
