@@ -6,12 +6,11 @@ description: Demonstrates how to use the add_to_wallet plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  share: ^2.0.4
 
   add_to_wallet:
     # When depending on this package from a real application you should use:
@@ -26,6 +25,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   dio: ^4.0.0
   path_provider: ^2.0.2
+  share_plus: ^13.3.0
 
 dev_dependencies:
   flutter_test:

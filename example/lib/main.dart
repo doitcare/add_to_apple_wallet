@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:add_to_wallet/add_to_wallet.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'pass_provider.dart';
 
@@ -81,7 +81,9 @@ class DownloadPass extends StatelessWidget {
   void _onPressed() async {
     print("The button was pressed, we could let the user download the pass for instance!");
     File passFile = await writePassFile();
-    Share.shareFiles([passFile.path], text: "Here is your pkPass!");
+    SharePlus.instance.share(
+      ShareParams(files: [XFile(passFile.path)], text: "Here is your pkPass!"),
+    );
   }
 
   Future<String> get _localPath async {
