@@ -1,4 +1,33 @@
-## 0.0.2
+## 1.1.0
+
+**Breaking requirements**
+
+* Minimum Flutter is now **3.44.0**. The Swift package declares a dependency on the
+  `FlutterFramework` Swift package, which Flutter only generates from 3.44.0 onwards.
+* Minimum iOS deployment target is now **13.0** (was 8.0 in the podspec).
+
+**Changes**
+
+* Added Swift Package Manager support. The iOS sources moved from `ios/Classes/` to a
+  Swift package at `ios/add_to_wallet/`, split into a Swift target (`add_to_wallet`) and
+  an Objective-C target (`add_to_wallet_objc`) as SwiftPM requires. Apps on Flutter 3.44+
+  pick this up automatically; no consumer changes are needed.
+* CocoaPods is still fully supported — the podspec builds both targets as a single pod.
+* The Objective-C `AddToWalletPlugin` registration shim was removed and the Swift plugin
+  class renamed `SwiftAddToWalletPlugin` → `AddToWalletPlugin`. This is transparent if you
+  rely on the generated plugin registrant, but breaks code that calls
+  `SwiftAddToWalletPlugin.register(with:)` directly.
+* Added an empty `PrivacyInfo.xcprivacy` privacy manifest.
+
+## 1.0.0
+
+* Add an `onPassAdded` callback to `AddToWalletButton`, invoked once a pass has
+  been added to the library.
+* Various fixes to platform view recreation when button parameters change.
+
+(Retroactive entry — releases between 0.0.2 and 1.0.0 were not recorded here.)
+
+## 0.0.2
 
 * Add `onPressed` registering on addToWallet button pressed
 

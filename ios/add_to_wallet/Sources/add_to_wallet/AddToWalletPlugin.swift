@@ -2,8 +2,12 @@ import Flutter
 import PassKit
 import UIKit
 
-import Flutter
-import UIKit
+// Import the Objective-C part of the implementation when SwiftPM is used.
+// Under CocoaPods both languages live in a single `add_to_wallet` module and
+// ExceptionHandler is reachable through the pod's umbrella header instead.
+#if canImport(add_to_wallet_objc)
+  import add_to_wallet_objc
+#endif
 
 class PKAddPassButtonNativeViewFactory: NSObject, FlutterPlatformViewFactory {
     private var messenger: FlutterBinaryMessenger
@@ -77,6 +81,8 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView, PKAddPassesViewC
     }
 
     @objc func passButtonAction() {
+        _invokeAddButtonPressed()
+
         if (_pass != nil) {
             var newPass: PKPass
             do {
@@ -147,10 +153,10 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView, PKAddPassesViewC
     }
 }
 
-public class SwiftAddToWalletPlugin: NSObject, FlutterPlugin {
+public class AddToWalletPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "add_to_wallet", binaryMessenger: registrar.messenger())
-    let instance = SwiftAddToWalletPlugin()
+    let instance = AddToWalletPlugin()
     let factory = PKAddPassButtonNativeViewFactory(messenger: registrar.messenger(), channel: channel)
     registrar.register(factory, withId: "PKAddPassButton")
     registrar.addMethodCallDelegate(instance, channel: channel)
