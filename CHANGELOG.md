@@ -19,6 +19,14 @@
   `SwiftAddToWalletPlugin.register(with:)` directly.
 * Added an empty `PrivacyInfo.xcprivacy` privacy manifest.
 
+## 1.0.0
+
+* Add an `onPassAdded` callback to `AddToWalletButton`, invoked once a pass has
+  been added to the library.
+* Various fixes to platform view recreation when button parameters change.
+
+(Retroactive entry — releases between 0.0.2 and 1.0.0 were not recorded here.)
+
 ## 0.0.2
 
 * Add `onPressed` registering on addToWallet button pressed
