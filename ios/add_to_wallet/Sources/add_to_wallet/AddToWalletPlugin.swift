@@ -81,6 +81,8 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView, PKAddPassesViewC
     }
 
     @objc func passButtonAction() {
+        _invokeAddButtonPressed()
+
         if (_pass != nil) {
             var newPass: PKPass
             do {

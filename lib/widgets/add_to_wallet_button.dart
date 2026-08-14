@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
+/// Native event names. Must match AddToWalletEvent.swift and the
+/// invokeMethod calls in AddToWalletPlugin.swift.
+const _addButtonPressedMethod = 'add_button_pressed';
+const _onPassAddedMethod = 'onPassAdded';
+
 class AddToWalletButton extends StatefulWidget {
   static const viewType = 'PKAddPassButton';
 
@@ -46,7 +51,19 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
   void initState() {
     super.initState();
     _id = Uuid().v4();
-    AddToWallet().addHandler(_id, (_) => widget.onPressed?.call());
+    // A single handler per widget, routed by `_id` through AddToWallet so that
+    // each button only receives its own events. Do not call
+    // setMethodCallHandler on the 'add_to_wallet' channel from here: a channel
+    // has exactly one handler, so that would replace AddToWallet's dispatcher
+    // and break key based routing for every button.
+    AddToWallet().addHandler(_id, (call) {
+      switch (call.method) {
+        case _addButtonPressedMethod:
+          return widget.onPressed?.call();
+        case _onPassAddedMethod:
+          return widget.onPassAdded?.call();
+      }
+    });
   }
 
   @override
@@ -95,16 +112,6 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
       layoutDirection: Directionality.of(context),
       creationParams: uiKitCreationParams,
       creationParamsCodec: const StandardMessageCodec(),
-      onPlatformViewCreated: (int id) {
-        if (widget.onPassAdded != null) {
-          const MethodChannel('add_to_wallet')
-              .setMethodCallHandler((call) async {
-            if (call.method == 'onPassAdded') {
-              widget.onPassAdded?.call();
-            }
-          });
-        }
-      },
     );
   }
 }
