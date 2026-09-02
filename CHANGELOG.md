@@ -1,3 +1,9 @@
+## 1.1.2
+
+No changes to the plugin. Repo tooling only: added `AGENTS.md` and `docs/agents/`, which
+configure the issue tracker, triage labels and domain-doc layout that the engineering
+skills read. None of it ships to consumers, so upgrading from 1.1.1 is a no-op.
+
 ## 1.1.1
 
 * Synced `s.version` in `add_to_wallet.podspec`, which was still `0.0.1` while the

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'add_to_wallet'
-  s.version          = '1.1.1'
+  s.version          = '1.1.2'
   s.summary          = 'A Flutter plugin interacting with Apple Wallet.'
   s.description      = <<-DESC
 Flutter plugin exposing native PKAddPassButton to interact with the Apple Wallet
