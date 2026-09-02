@@ -65,7 +65,16 @@ void main() {
     expect(calls, 1);
   });
 
-  test('an event for an unknown key is ignored without throwing', () async {
-    await sendNativeEvent('add_button_pressed', 'no-such-key');
+  test('an event for an unknown key reaches no handler and does not throw',
+      () async {
+    var calls = 0;
+    await AddToWallet().addHandler('a', (_) => calls++);
+    addTearDown(() => AddToWallet().removeHandler('a'));
+
+    await expectLater(
+        sendNativeEvent('add_button_pressed', 'no-such-key'), completes);
+
+    expect(calls, 0,
+        reason: 'an unknown key must not fall through to another handler');
   });
 }

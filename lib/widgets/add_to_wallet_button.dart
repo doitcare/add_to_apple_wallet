@@ -80,8 +80,6 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
         'issuerData': widget.issuerData,
         'signature': widget.signature,
         'key': _id,
-        'onPassAdded':
-            widget.onPassAdded != null, // Indicate if the callback is provided
       };
 
   @override
