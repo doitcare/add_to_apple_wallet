@@ -1,3 +1,14 @@
+## 1.1.1
+
+* Synced `s.version` in `add_to_wallet.podspec`, which was still `0.0.1` while the
+  package was at `1.1.0`.
+* Documented the 1.1.0 event routing fixes below — they were shipped but never
+  written down, so consumers had no warning that `onPressed` starts firing.
+* Dropped the `onPassAdded` flag from the platform view creation params. It was sent
+  on every build but never read by `PKAddPassButtonNativeView`.
+* The dispatcher test for unknown keys now asserts. It had no `expect`, so it passed
+  even when routing was broken.
+
 ## 1.1.0
 
 **Breaking requirements**
@@ -18,6 +29,24 @@
   rely on the generated plugin registrant, but breaks code that calls
   `SwiftAddToWalletPlugin.register(with:)` directly.
 * Added an empty `PrivacyInfo.xcprivacy` privacy manifest.
+
+**Breaking behaviour — event routing fixed**
+
+Both bugs below predate 1.1.0 and made the button's callbacks unusable. Fixing them
+changes what existing consumers observe at runtime:
+
+* `onPressed` now fires. `_invokeAddButtonPressed()` had no caller, so
+  `add_button_pressed` never reached Dart and the documented `onPressed` API never
+  fired at all. Any navigation, analytics or state mutation in an `onPressed`
+  callback will start executing where it previously did not.
+* `onPassAdded` is now scoped to the button that was actually tapped.
+  `AddToWalletButton` used to call `setMethodCallHandler` on the shared
+  `add_to_wallet` channel from `onPlatformViewCreated`. A channel holds exactly one
+  handler, so this replaced `AddToWallet`'s dispatcher and destroyed key based
+  routing: `onPassAdded` fired on whichever button mounted last, regardless of which
+  one was tapped, and the handler was never removed on dispose. Both callbacks now
+  go through the existing per key handler, dispatched on `call.method`, and the
+  handler is removed in `dispose()`.
 
 ## 1.0.0
 
